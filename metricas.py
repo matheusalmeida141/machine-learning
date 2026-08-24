@@ -43,8 +43,8 @@ nb = naive_bayes.GaussianNB()
 
 logi = linear_model.LogisticRegression(fit_intercept= True)
 
-
-X = df_analise[df_analise.columns[:-1].tolist()]
+features = df_analise.columns[:-1].tolist()
+X = df_analise[features]
 y = df_analise["happy"]
 
 arvore.fit(X, y)
@@ -94,4 +94,8 @@ plt.plot(roc_logi[0], roc_logi[1], '-o')
 plt.legend([f"arvore: {auc_arvore:.2f}", 
             f"naive bayes: {auc_naive:.2f}", 
             f"logi: {auc_logi:.2f}"])
+# %%
+
+pd.Series({"model": logi, "features":features}).to_pickle("model_feliz.pkl")
+
 # %%
