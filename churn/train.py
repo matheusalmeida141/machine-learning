@@ -83,9 +83,68 @@ features_importance[features_importance["freqAcumulada"] < 0.96]
 best_features =  features_importance[features_importance["freqAcumulada"] < 0.96]["index"].to_list()
 best_features
 
-#instalar feature engine
+# %%
 #discretizar a variavel com tree
+from feature_engine.discretisation import DecisionTreeDiscretiser
+
+disc = DecisionTreeDiscretiser(regression=False,
+                            bin_output="bin_number",
+                            cv=3,
+                            variables = best_features
+                            )
 #fit
+disc.fit(X_train[best_features], y_train)
 #transform
+X_train_t = disc.transform(X_train[best_features])
+X_train_t
+# %%
+
+#Model
+
+#passar o modelo utilizado, usou o regression
+from sklearn import linear_model
+reg = linear_model.LogisticRegression(
+    #penalty=None,
+    random_state=42,
+    max_iter=10000
+)
+
+#fit
+reg.fit(X_train_t, y_train)
+
+# %%
+#Metricas
+from sklearn import metrics
+
+y_train_predict = reg.predict(X_train_t)
+y_train_proba   = reg.predict_proba(X_train_t)[:,1]
+
+acc_train = metrics.accuracy_score(y_train, y_train_predict)
+auc_train = metrics.roc_auc_score(y_train, y_train_proba)
+print(f"Treino: Acurácia: {acc_train} \nAUC: {auc_train}")
+
+# %%
+# Conjunto de teste
+X_test_t = disc.transform(X_test[best_features])
+
+y_test_predict = reg.predict(X_test_t)
+y_test_proba = reg.predict_proba(X_test_t)[:,1]
+
+acc_test = metrics.accuracy_score(y_test, y_test_predict)
+auc_test = metrics.roc_auc_score(y_test, y_test_proba)
+
+print(f"Teste: Acurácia: {acc_test} \nAUC: {auc_test}")
+
+# %%
+
+# conjunto oot
+X_oot_t = disc.transform(oot[best_features])
+
+y_oot_predict = reg.predict(X_oot_t)
+y_oot_proba = reg.predict_proba(X_oot_t)[:,1]
+
+acc_oot = metrics.accuracy_score(oot[target], y_oot_predict)
+auc_oot = metrics.roc_auc_score(oot[target], y_oot_proba)
+print(f"Teste: Acurácia: {acc_oot} \nAUC: {auc_oot}")
 
 # %%
